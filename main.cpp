@@ -11,6 +11,9 @@ int main() {
     DisparityCalculator disparityCalculator;
 
     dataset.ReadImages();
+    std::string file_path = "../data/dataset/sequences/test/calib.txt";
+
+    DatasetHandler::CameraParameters params =  dataset.GetCameraParameters(file_path);
 
     cv::Mat left_image, right_image;
 

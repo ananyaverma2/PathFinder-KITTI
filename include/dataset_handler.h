@@ -17,10 +17,17 @@
 
 class DatasetHandler {
 public:
+    struct CameraParameters {
+        double fx, fy;
+        double cx, cy;
+        double baseline;
+    };
     DatasetHandler();
     void ReadImages();
     bool NextImages(cv::Mat& leftImage, cv::Mat& rightImage);
     int GetCurrentIndex() const;
+    CameraParameters GetCameraParameters(const std::string& file_path);
+
 private:
     std::vector<std::filesystem::path> left_images_;
     std::vector<std::filesystem::path> right_images_;
