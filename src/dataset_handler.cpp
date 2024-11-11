@@ -100,7 +100,6 @@ DatasetHandler::CameraParameters DatasetHandler::GetCameraParameters(const std::
                 cv::decomposeProjectionMatrix(projection_matrix_right, camera_matrix_right, rotation_matrix_right, translation_vector_right);
 
                 parameters.baseline = std::abs(translation_vector_right.at<double>(0) / parameters.fx);
-                std::cout << parameters.baseline << std::endl;
             }
         }
     }

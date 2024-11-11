@@ -22,6 +22,7 @@ public:
         double cx, cy;
         double baseline;
     };
+    CameraParameters params;
     DatasetHandler();
     void ReadImages();
     bool NextImages(cv::Mat& leftImage, cv::Mat& rightImage);
