@@ -9,13 +9,13 @@ add_executable(visual_odometry main.cpp
         include/feature_matcher.h
         include/disparity_calculator.h
         include/motion_estimator.h
-        include/plotter.h
+        include/results.h
         src/dataset_handler.cpp
         src/feature_extractor.cpp
         src/feature_matcher.cpp
         src/disparity_calculator.cpp
         src/motion_estimator.cpp
-        src/plotter.cpp)
+        src/results.cpp)
 
 set(OpenCV_DIR "C:/opencv/build/install/x64/mingw/lib")
 find_package(OpenCV 4 REQUIRED)
