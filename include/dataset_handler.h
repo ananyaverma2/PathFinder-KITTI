@@ -28,6 +28,7 @@ public:
     bool NextImages(cv::Mat& leftImage, cv::Mat& rightImage);
     int GetCurrentIndex() const;
     CameraParameters GetCameraParameters(const std::string& file_path);
+    void GetGroundTruth(std::vector<cv::Mat>& rotations, std::vector<cv::Mat>& translations);
 
 private:
     std::vector<std::filesystem::path> left_images_;

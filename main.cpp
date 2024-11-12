@@ -4,6 +4,7 @@
 #include "include/feature_matcher.h"
 #include "include/disparity_calculator.h"
 #include "include/motion_estimator.h"
+#include "include/results.h"
 
 int main() {
     DatasetHandler dataset;
@@ -11,13 +12,21 @@ int main() {
     FeatureMatcher featureMatcher;
     DisparityCalculator disparityCalculator;
     MotionEstimator motionEstimator;
+    Results saveResults;
 
     dataset.ReadImages();
-    std::string file_path = "../data/dataset/sequences/test/calib.txt";
+    std::string file_path = "../data/dataset/sequences/01/calib.txt";
+    std::vector<cv::Mat> rotations,  translations;
+    dataset.GetGroundTruth(rotations, translations);
 
     DatasetHandler::CameraParameters params =  dataset.GetCameraParameters(file_path);
 
     cv::Mat left_image, right_image;
+
+    // Vector to accumulate estimated rotations and translations for all frames
+    std::vector<cv::Mat> all_rotations, all_translations;
+    cv::Mat cumulative_translations = cv::Mat::zeros(3, 1, CV_64F);
+
 
     while (dataset.NextImages(left_image, right_image)) {
         std::vector<cv::KeyPoint> left_keypoints, right_keypoints;
@@ -50,17 +59,19 @@ int main() {
                 }
             }
         }
-        cv::Mat rvec, tvec;
-        motionEstimator.EstimateMotionUsingPnP(matches, left_keypoints, right_keypoints, params, depth_map, rvec, tvec);
+        cv::Mat estimated_rotations, estimated_translations;
+        motionEstimator.EstimateMotionUsingPnP(matches, left_keypoints, right_keypoints, params, depth_map, estimated_rotations, estimated_translations);
 
-        cv::imshow("matched image", matched_images);
-        cv::waitKey(1);
-        cv::imshow("disparity image", disparity_image);
-        cv::waitKey(1);
-        cv::Mat depthMapVis;
-        cv::normalize(depth_map, depthMapVis, 0, 255, cv::NORM_MINMAX, CV_8U);
-        cv::imshow("Depth Map", depthMapVis);
-        cv::waitKey(1);
+        // Accumulate the estimated translation and rotation
+        all_rotations.push_back(estimated_rotations.clone());  // Store rotation matrix
+        cumulative_translations += estimated_translations;  // Accumulate translation
+        all_translations.push_back(cumulative_translations.clone());  // Store accumulated translation
+
     }
+
+    std::cout << "Saving results..." << std::endl;
+    // Save all poses to file at once
+    saveResults.SavePosesToFile(all_rotations, all_translations, "../results/poses.txt");
+
     return 0;
 }

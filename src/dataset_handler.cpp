@@ -12,18 +12,14 @@ DatasetHandler::DatasetHandler() {
 
 void DatasetHandler::ReadImages() {
 
-    std::filesystem::path left_directory_path = "../data/dataset/sequences/test/image_0";
-    std::filesystem::path right_directory_path = "../data/dataset/sequences/test/image_1";
+    std::filesystem::path left_directory_path = "../data/dataset/sequences/01/image_0";
+    std::filesystem::path right_directory_path = "../data/dataset/sequences/01/image_1";
 
     if (std::filesystem::exists(right_directory_path) && std::filesystem::exists(left_directory_path)) {
         for (auto& left_image: std::filesystem::directory_iterator(left_directory_path)) {
-
-            std::cout << left_image.path() << std::endl;
             left_images_.push_back(left_image.path());
         }
         for (auto& right_image: std::filesystem::directory_iterator(right_directory_path)) {
-
-            std::cout << right_image.path() << std::endl;
             right_images_.push_back(right_image.path());
         }
     }
@@ -35,7 +31,6 @@ void DatasetHandler::ReadImages() {
 bool DatasetHandler::NextImages(cv::Mat& leftImage, cv::Mat& rightImage) {
 
     if (current_index_ >= left_images_.size() || current_index_ >= right_images_.size()) {
-        std::cout << "End of dataset reached." << std::endl;
         return false;
     }
 
@@ -83,8 +78,6 @@ DatasetHandler::CameraParameters DatasetHandler::GetCameraParameters(const std::
                 parameters.fy = camera_matrix_left.at<double>(1, 1);
                 parameters.cx = camera_matrix_left.at<double>(0, 2);
                 parameters.cy = camera_matrix_left.at<double>(1, 2);
-
-                std::cout << parameters.fx << std::endl;
             }
         }
         if (key == "P1:") {
@@ -107,3 +100,43 @@ DatasetHandler::CameraParameters DatasetHandler::GetCameraParameters(const std::
     return parameters;
 }
 
+void DatasetHandler::GetGroundTruth(std::vector<cv::Mat>& rotations, std::vector<cv::Mat>& translations) {
+
+    std::filesystem::path poses_directory_path = "../data/dataset/poses/01.txt";
+
+    std::ifstream file(poses_directory_path);
+
+    if (!file.is_open()) {
+        std::cout << "poses.txt could not be read at " << poses_directory_path << std::endl;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream ss(line);
+        std::vector<double> values(12); // To store 12 values for rotation and translation
+
+        // Read the 12 values from each line
+        for (int i = 0; i < 12; ++i) {
+            ss >> values[i];
+        }
+        // Rotation matrix (3x3)
+        cv::Mat rotation_matrix = cv::Mat(3, 3, CV_64F);
+        int index = 0;
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                rotation_matrix.at<double>(i, j) = values[index++];
+            }
+        }
+
+        // Translation vector (3x1)
+        cv::Mat translation_vector = cv::Mat(3, 1, CV_64F);
+        for (int i = 0; i < 3; ++i) {
+            translation_vector.at<double>(i, 0) = values[index++];
+        }
+
+        // Store the rotation matrix and translation vector
+        rotations.push_back(rotation_matrix);
+        translations.push_back(translation_vector);
+    }
+    file.close();
+}

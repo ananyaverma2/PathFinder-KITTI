@@ -41,7 +41,4 @@ void MotionEstimator::EstimateMotionUsingPnP(const std::vector<cv::DMatch>& matc
   if (!success) {
     std::cerr << "Motion estimation failed." << std::endl;
   }
-  else {
-    std::cout << "Motion estimator works!" << std::endl;
-  }
 }
